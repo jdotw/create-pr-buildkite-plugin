@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Source the plugin environment
+PLUGIN_DIR="$(cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd)"
+
+# Get configuration from plugin config or environment variables
+LINEAR_ISSUE_TITLE="${BUILDKITE_PLUGIN_CREATE_PR_LINEAR_ISSUE_TITLE:-${LINEAR_ISSUE_TITLE:-}}"
+LINEAR_ISSUE_DESCRIPTION="${BUILDKITE_PLUGIN_CREATE_PR_LINEAR_ISSUE_DESCRIPTION:-${LINEAR_ISSUE_DESCRIPTION:-}}"
+BASE_BRANCH="${BUILDKITE_PLUGIN_CREATE_PR_BASE_BRANCH:-main}"
+CLAUDE_CODE_FLAGS="${BUILDKITE_PLUGIN_CREATE_PR_CLAUDE_CODE_FLAGS:-}"
+
+# Validate required parameters
+if [[ -z "$LINEAR_ISSUE_TITLE" ]]; then
+  echo "❌ Error: Linear issue title is required"
+  echo "   Set via plugin config 'linear_issue_title' or environment variable LINEAR_ISSUE_TITLE"
+  exit 1
+fi
+
+if [[ -z "$LINEAR_ISSUE_DESCRIPTION" ]]; then
+  echo "❌ Error: Linear issue description is required"
+  echo "   Set via plugin config 'linear_issue_description' or environment variable LINEAR_ISSUE_DESCRIPTION"
+  exit 1
+fi
+
+echo "🔧 Creating PR to solve Linear issue..."
+echo "   Title: $LINEAR_ISSUE_TITLE"
+echo "   Base branch: $BASE_BRANCH"
+
+# Ensure we're on the latest base branch
+git fetch origin "$BASE_BRANCH"
+git checkout "$BASE_BRANCH"
+git pull origin "$BASE_BRANCH"
+
+# Create a new branch for the fix
+BRANCH_NAME="linear-$(echo "$LINEAR_ISSUE_TITLE" | tr '[:upper:]' '[:lower:]' | tr ' ' '-' | tr -cd '[:alnum:]-' | cut -c1-50)"
+BRANCH_NAME="${BRANCH_NAME}-$(date +%s)"
+
+echo "📝 Creating branch: $BRANCH_NAME"
+git checkout -b "$BRANCH_NAME"
+
+# Prepare the prompt for Claude Code
+PROMPT="Please solve the following Linear issue and create the necessary code changes:
+
+Title: $LINEAR_ISSUE_TITLE
+
+Description:
+$LINEAR_ISSUE_DESCRIPTION
+
+Requirements:
+1. Analyze the issue and implement a solution
+2. Create or modify the necessary files
+3. Ensure the code follows the project's conventions
+4. Add appropriate tests if applicable
+5. After making changes, create a git commit with a descriptive message
+6. Then create a pull request
+
+Please proceed with implementing the solution."
+
+# Run Claude Code with the prompt
+echo "🤖 Running Claude Code to implement the solution..."
+if ! claude-code $CLAUDE_CODE_FLAGS --yes --prompt "$PROMPT"; then
+  echo "❌ Error: Claude Code failed to create the solution"
+  exit 1
+fi
+
+# Push the branch (Claude Code should have already created the PR)
+echo "📤 Pushing branch to remote..."
+git push -u origin "$BRANCH_NAME"
+
+echo "✅ Successfully created PR for Linear issue!"

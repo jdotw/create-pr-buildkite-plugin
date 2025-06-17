@@ -1,0 +1,36 @@
+steps:
+  # Example 1: Using environment variables
+  - label: ":linear: Create PR from Linear Issue"
+    env:
+      LINEAR_ISSUE_TITLE: "Fix authentication bug in login flow"
+      LINEAR_ISSUE_DESCRIPTION: |
+        Users are unable to login when their session expires.
+        The error occurs in the authentication middleware.
+        We need to properly handle session renewal.
+    plugins:
+      - create-pr#v1.0.0:
+          base_branch: main
+
+  # Example 2: Using plugin configuration
+  - label: ":linear: Create PR with Plugin Config"
+    plugins:
+      - create-pr#v1.0.0:
+          linear_issue_title: "Add dark mode support"
+          linear_issue_description: |
+            Implement a dark mode toggle in the application.
+            Should include:
+            - Theme switcher in settings
+            - Persistent user preference
+            - Smooth transitions
+          base_branch: develop
+          claude_code_flags: "--model claude-3-opus-20240229"
+
+  # Example 3: Dynamic from build metadata
+  - label: ":linear: Create PR from Build Metadata"
+    command: |
+      # You could fetch issue details from Linear API here
+      export LINEAR_ISSUE_TITLE="$(buildkite-agent meta-data get linear-title)"
+      export LINEAR_ISSUE_DESCRIPTION="$(buildkite-agent meta-data get linear-description)"
+    plugins:
+      - create-pr#v1.0.0:
+          base_branch: main
