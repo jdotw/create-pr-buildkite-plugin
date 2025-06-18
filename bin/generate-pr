@@ -92,7 +92,7 @@ fi
 git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${REPO_PATH}"
 
 # Create a branch for the changes
-BASE_BRANCH_NAME="linear-${ISSUE_ID}"  # lowercase issue ID
+BASE_BRANCH_NAME="ai-linear-${ISSUE_ID}"  # lowercase issue ID
 BRANCH_NAME="$BASE_BRANCH_NAME"
 
 # Check if branch already exists and find a unique name
