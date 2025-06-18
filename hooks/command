@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 set -euo pipefail
 
 echo "--- :robot_face: Generating PR with Claude Code CLI"

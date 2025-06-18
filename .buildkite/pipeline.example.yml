@@ -1,36 +1,130 @@
 steps:
-  # Example 1: Using environment variables
+  # Example 1: Direct usage with all environment variables set
   - label: ":linear: Create PR from Linear Issue"
     env:
-      LINEAR_ISSUE_TITLE: "Fix authentication bug in login flow"
+      LINEAR_ISSUE_IDENTIFIER: "PROJ-123"
+      LINEAR_ISSUE_TITLE: "Add user authentication flow"
       LINEAR_ISSUE_DESCRIPTION: |
-        Users are unable to login when their session expires.
-        The error occurs in the authentication middleware.
-        We need to properly handle session renewal.
+        We need to implement a complete user authentication system including:
+        - User registration with email verification
+        - Login/logout functionality
+        - Password reset flow
+        - Remember me option
+      LINEAR_ISSUE_URL: "https://linear.app/company/issue/PROJ-123"
+      LINEAR_TEAM_NAME: "Backend Team"
+      LINEAR_ASSIGNEE: "John Doe"
+      LINEAR_ISSUE_PRIORITY: "High"
+      LINEAR_ISSUE_STATE: "In Progress"
+      LINEAR_CREATOR: "Jane Smith"
+      ISSUE_DATA_JSON: |
+        {
+          "id": "123",
+          "identifier": "PROJ-123",
+          "history": [
+            {
+              "type": "comment",
+              "user": {"displayName": "Jane Smith"},
+              "content": {"body": "This should integrate with our existing user model"}
+            },
+            {
+              "type": "history",
+              "content": {
+                "from_state": {"name": "Backlog"},
+                "to_state": {"name": "In Progress"}
+              }
+            }
+          ]
+        }
+      GITHUB_TOKEN: "${GITHUB_TOKEN}"
+      USER_NAME: "John Doe"
+      USER_EMAIL: "john@example.com"
     plugins:
-      - create-pr#v1.0.0:
-          base_branch: main
+      - create-pr#v1.0.0
 
-  # Example 2: Using plugin configuration
-  - label: ":linear: Create PR with Plugin Config"
+  # Example 2: Testing mode without Claude Code
+  - label: ":test_tube: Test PR Creation (Mock Mode)"
+    env:
+      LINEAR_ISSUE_IDENTIFIER: "TEST-456"
+      LINEAR_ISSUE_TITLE: "Test issue for pipeline"
+      LINEAR_ISSUE_DESCRIPTION: "This is a test issue"
+      LINEAR_ISSUE_URL: "https://linear.app/company/issue/TEST-456"
+      ISSUE_DATA_JSON: '{"id": "456", "identifier": "TEST-456", "history": []}'
+      GITHUB_TOKEN: "${GITHUB_TOKEN}"
+      USER_NAME: "Test User"
+      USER_EMAIL: "test@example.com"
+      DEBUG_SKIP_CLAUDE: "1"  # Skip Claude Code, create mock file
     plugins:
-      - create-pr#v1.0.0:
-          linear_issue_title: "Add dark mode support"
-          linear_issue_description: |
-            Implement a dark mode toggle in the application.
-            Should include:
-            - Theme switcher in settings
-            - Persistent user preference
-            - Smooth transitions
-          base_branch: develop
-          claude_code_flags: "--model claude-3-opus-20240229"
+      - create-pr#v1.0.0
 
-  # Example 3: Dynamic from build metadata
-  - label: ":linear: Create PR from Build Metadata"
+  # Example 3: Linear webhook integration
+  - label: ":webhook: Process Linear Webhook and Create PR"
+    commands:
+      - |
+        # This would typically be triggered by a Linear webhook
+        # Parse the webhook payload to extract issue data
+        export LINEAR_ISSUE_IDENTIFIER=$(echo "$BUILDKITE_PLUGIN_WEBHOOK_PAYLOAD" | jq -r '.data.identifier')
+        export LINEAR_ISSUE_TITLE=$(echo "$BUILDKITE_PLUGIN_WEBHOOK_PAYLOAD" | jq -r '.data.title')
+        export LINEAR_ISSUE_DESCRIPTION=$(echo "$BUILDKITE_PLUGIN_WEBHOOK_PAYLOAD" | jq -r '.data.description')
+        export LINEAR_ISSUE_URL=$(echo "$BUILDKITE_PLUGIN_WEBHOOK_PAYLOAD" | jq -r '.data.url')
+        export LINEAR_TEAM_NAME=$(echo "$BUILDKITE_PLUGIN_WEBHOOK_PAYLOAD" | jq -r '.data.team.name')
+        export LINEAR_ASSIGNEE=$(echo "$BUILDKITE_PLUGIN_WEBHOOK_PAYLOAD" | jq -r '.data.assignee.displayName // "Unassigned"')
+        export LINEAR_ISSUE_PRIORITY=$(echo "$BUILDKITE_PLUGIN_WEBHOOK_PAYLOAD" | jq -r '.data.priority')
+        export LINEAR_ISSUE_STATE=$(echo "$BUILDKITE_PLUGIN_WEBHOOK_PAYLOAD" | jq -r '.data.state.name')
+        export LINEAR_CREATOR=$(echo "$BUILDKITE_PLUGIN_WEBHOOK_PAYLOAD" | jq -r '.data.creator.displayName')
+        export ISSUE_DATA_JSON=$(echo "$BUILDKITE_PLUGIN_WEBHOOK_PAYLOAD" | jq -r '.data')
+        export USER_NAME="${BUILDKITE_BUILD_CREATOR}"
+        export USER_EMAIL="${BUILDKITE_BUILD_CREATOR_EMAIL}"
+    plugins:
+      - create-pr#v1.0.0
+
+  # Example 4: Using metadata from previous steps
+  - label: ":gear: Setup Linear Data"
     command: |
-      # You could fetch issue details from Linear API here
-      export LINEAR_ISSUE_TITLE="$(buildkite-agent meta-data get linear-title)"
-      export LINEAR_ISSUE_DESCRIPTION="$(buildkite-agent meta-data get linear-description)"
+      # Fetch Linear issue data via API
+      LINEAR_DATA=$(curl -H "Authorization: ${LINEAR_API_KEY}" \
+        "https://api.linear.app/graphql" \
+        -d '{"query": "{ issue(id: \"PROJ-789\") { identifier title description url team { name } assignee { displayName } priority state { name } creator { displayName } } }"}')
+      
+      # Store in metadata
+      buildkite-agent meta-data set "linear_data" "$LINEAR_DATA"
+
+  - wait
+
+  - label: ":linear: Create PR from Metadata"
+    commands:
+      - |
+        # Retrieve from metadata
+        LINEAR_DATA=$(buildkite-agent meta-data get "linear_data")
+        
+        # Extract fields
+        export LINEAR_ISSUE_IDENTIFIER=$(echo "$LINEAR_DATA" | jq -r '.data.issue.identifier')
+        export LINEAR_ISSUE_TITLE=$(echo "$LINEAR_DATA" | jq -r '.data.issue.title')
+        # ... extract other fields
+        
+        export ISSUE_DATA_JSON="$LINEAR_DATA"
+        export USER_NAME="${BUILDKITE_BUILD_CREATOR}"
+        export USER_EMAIL="${BUILDKITE_BUILD_CREATOR_EMAIL}"
     plugins:
-      - create-pr#v1.0.0:
-          base_branch: main
+      - create-pr#v1.0.0
+
+  # Example 5: Post-PR actions
+  - label: ":linear: Create PR and Update Linear"
+    env:
+      # ... all required environment variables
+    plugins:
+      - create-pr#v1.0.0
+    
+  - wait
+
+  - label: ":link: Update Linear with PR Link"
+    command: |
+      # Get PR details from metadata
+      PR_URL=$(buildkite-agent meta-data get "pull_request_url")
+      PR_NUMBER=$(buildkite-agent meta-data get "pull_request_number")
+      
+      echo "Created PR #${PR_NUMBER}: ${PR_URL}"
+      
+      # Update Linear issue with PR link (example)
+      # curl -X POST "https://api.linear.app/graphql" \
+      #   -H "Authorization: ${LINEAR_API_KEY}" \
+      #   -d "{\"query\": \"mutation { commentCreate(input: { issueId: \\\"${LINEAR_ISSUE_ID}\\\", body: \\\"PR created: ${PR_URL}\\\" }) { success } }\"}"

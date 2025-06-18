@@ -1,21 +1,10 @@
 name: Create-PR
-description: Creates a pull request using Claude Code to solve a Linear issue
+description: Creates a pull request using Claude Code to solve a Linear issue with full context
 author: https://github.com/jdotw
 requirements:
-  - claude
+  - claude-code
+  - jq
+  - gh (GitHub CLI)
 configuration:
-  properties:
-    linear_issue_title:
-      type: string
-      description: Title of the Linear issue (can be set via environment variable)
-    linear_issue_description:
-      type: string
-      description: Description of the Linear issue (can be set via environment variable)
-    base_branch:
-      type: string
-      default: main
-      description: Base branch for the PR
-    claude_code_flags:
-      type: string
-      description: Additional flags to pass to Claude Code
+  properties: {}
   additionalProperties: false
