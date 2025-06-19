@@ -2,6 +2,7 @@
 set -euo pipefail
 
 echo "--- :robot_face: Failing fast!"
+git config --global --add safe.directory /app
 echo "Git Status: "
 echo "$(git status)"
 echo "Calling exit"
