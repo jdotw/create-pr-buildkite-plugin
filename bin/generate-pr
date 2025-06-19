@@ -77,6 +77,8 @@ EOF
 
 # Configure git to use GITHUB_TOKEN for authentication
 echo "--- :key: Configuring git authentication"
+git config --global --add safe.directory /app
+
 # Extract the repository URL without protocol
 REPO_URL=$BUILDKITE_REPO
 if [[ $REPO_URL == https://* ]]; then
