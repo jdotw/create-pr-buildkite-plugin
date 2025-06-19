@@ -43,7 +43,7 @@ The plugin requires the following environment variables to be set:
    - State change history
    - Assignee changes
 
-2. **Git Setup**: 
+2. **Git Setup**:
    - Configures git authentication using GITHUB_TOKEN
    - Creates a unique branch named `linear-{issue-id}` (with counter if exists)
 
@@ -60,9 +60,6 @@ The plugin requires the following environment variables to be set:
 
 ## Requirements
 
-- `claude-code` CLI or `@anthropic-ai/claude-code` npm package
-- `jq` for JSON parsing
-- `gh` (GitHub CLI) for PR creation
 - Git repository with push access
 - Valid GITHUB_TOKEN with repo permissions
 
@@ -88,7 +85,7 @@ steps:
       export LINEAR_ISSUE_IDENTIFIER=$(echo "$WEBHOOK_DATA" | jq -r '.issue.identifier')
       export LINEAR_ISSUE_TITLE=$(echo "$WEBHOOK_DATA" | jq -r '.issue.title')
       # ... set other required variables
-    
+
   - wait
 
   - label: ":linear: Create PR from Linear Issue"
