@@ -20,4 +20,8 @@ echo "Copying generate-pr from $HOOKS_DIR/../bin/generate-pr to $BUILDKITE_BUILD
 cp $HOOKS_DIR/../bin/generate-pr $BUILDKITE_BUILD_CHECKOUT_PATH/first-draft-repo/scripts/generate-pr
 chmod u+x $BUILDKITE_BUILD_CHECKOUT_PATH/first-draft-repo/scripts/generate-pr
 
+mkdir -p $BUILDKITE_BUILD_CHECKOUT_PATH/first-draft-repo/repo/.claude
+echo "Copying claude-settings.json from $HOOKS_DIR/../config/claude-settings.json to $BUILDKITE_BUILD_CHECKOUT_PATH/first-draft-repo/repo/.claude/settings.local.json"
+cp $HOOKS_DIR/../config/claude-settings.json $BUILDKITE_BUILD_CHECKOUT_PATH/first-draft-repo/repo/.claude/settings.local.json
+
 ls -al $BUILDKITE_BUILD_CHECKOUT_PATH/first-draft-repo
