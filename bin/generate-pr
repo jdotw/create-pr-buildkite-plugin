@@ -78,15 +78,18 @@ EOF
 # Configure git to use GITHUB_TOKEN for authentication
 echo "--- :key: Configuring git authentication"
 # Extract the repository URL without protocol
-REPO_URL=$(git config --get remote.origin.url)
+REPO_URL=$BUILDKITE_REPO
 if [[ $REPO_URL == https://* ]]; then
   # Already using HTTPS, just need to add authentication
   REPO_PATH=${REPO_URL#https://github.com/}
 else
   # Convert SSH to HTTPS format
+  echo "Converting SSH repo to HTTPS repo"
   REPO_PATH=${REPO_URL#git@github.com:}
   REPO_PATH=${REPO_PATH%.git}
 fi
+
+echo "Repo path is $REPO_PATH"
 
 # Set the remote URL with authentication token
 git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${REPO_PATH}"
