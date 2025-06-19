@@ -1,0 +1,9 @@
+#!/bin/bash
+
+set -ueo pipefail
+
+HOOKS_DIR="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
+
+cp $HOOKS_DIR../bin/generate-pr /generate-pr
+chmod u+x /generate-pr
+
