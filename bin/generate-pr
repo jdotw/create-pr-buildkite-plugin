@@ -76,6 +76,28 @@ ${ISSUE_JSON}
 Please implement the functionality described in this Linear issue. Follow Rails best practices and the existing patterns in this codebase.
 EOF
 
+# Create Buildkite annotation for Linear ticket info
+echo "--- :buildkite: Creating Linear ticket annotation"
+buildkite-agent annotate --style "info" --context "linear-ticket" << EOF
+<h3>📋 Linear Ticket Information</h3>
+<p><strong>Issue:</strong> <a href="${ISSUE_URL}">${ISSUE_ID}</a> - ${ISSUE_TITLE}</p>
+<details>
+<summary>Click to expand ticket details</summary>
+<h4>Details</h4>
+<ul>
+<li><strong>Team:</strong> ${LINEAR_TEAM_NAME}</li>
+<li><strong>Assignee:</strong> ${LINEAR_ASSIGNEE}</li>
+<li><strong>Priority:</strong> ${LINEAR_ISSUE_PRIORITY}</li>
+<li><strong>State:</strong> ${LINEAR_ISSUE_STATE}</li>
+<li><strong>Creator:</strong> ${LINEAR_CREATOR}</li>
+</ul>
+<h4>Description</h4>
+<pre>${ISSUE_DESCRIPTION}</pre>
+<h4>Recent Activity</h4>
+<pre>${ISSUE_HISTORY}</pre>
+</details>
+EOF
+
 # Configure git to use GITHUB_TOKEN for authentication
 echo "--- :key: Configuring git authentication"
 git config --global --add safe.directory /app
@@ -155,6 +177,16 @@ The implementation should be complete and ready for use. Focus on creating worki
 $(cat "$CONTEXT_FILE")
 EOF
 
+# Create Buildkite annotation for Claude Code prompt
+echo "--- :buildkite: Creating Claude Code prompt annotation"
+buildkite-agent annotate --style "info" --context "claude-prompt" << EOF
+<h3>🤖 Claude Code Prompt</h3>
+<details>
+<summary>Click to expand the prompt sent to Claude Code</summary>
+<pre>$(cat "$PROMPT_FILE" | sed 's/</\&lt;/g' | sed 's/>/\&gt;/g')</pre>
+</details>
+EOF
+
 # Check if we should skip Claude Code for testing
 if [ -n "${DEBUG_SKIP_CLAUDE:-}" ]; then
     echo "--- :warning: DEBUG MODE: Skipping Claude Code invocation"
@@ -195,6 +227,16 @@ else
     # Store the Claude Code output in metadata
     echo "--- :floppy_disk: Storing Claude Code output in metadata"
     buildkite-agent meta-data set "claude_code_output" < "$CLAUDE_OUTPUT_FILE"
+    
+    # Create Buildkite annotation for Claude Code output
+    echo "--- :buildkite: Creating Claude Code output annotation"
+    buildkite-agent annotate --style "success" --context "claude-output" << EOF
+<h3>✨ Claude Code Output</h3>
+<details>
+<summary>Click to expand the full Claude Code execution log</summary>
+<pre>$(cat "$CLAUDE_OUTPUT_FILE" | sed 's/</\&lt;/g' | sed 's/>/\&gt;/g')</pre>
+</details>
+EOF
 fi
 
 # Clean up temporary files
