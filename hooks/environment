@@ -2,6 +2,13 @@
 
 set -ueo pipefail
 
+echo "PWD: $(pwd)"
+echo "BASH_SOURCE[0]: ${BASH_SOURCE[0]}"
+
 HOOKS_DIR="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
+
+echo "HOOKS_DIR: $HOOKS_DIR"
+
+env
 
 export PATH="$PATH:$HOOKS_DIR/../bin"
