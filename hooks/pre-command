@@ -4,6 +4,9 @@ set -ueo pipefail
 
 HOOKS_DIR="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
 
+echo "Copying generate-pr from $HOOKS_DIR/../bin/generate-pr to /generate-pr"
 cp $HOOKS_DIR/../bin/generate-pr /generate-pr
 chmod u+x /generate-pr
+
+ls /
 
