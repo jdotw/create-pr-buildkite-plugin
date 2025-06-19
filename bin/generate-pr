@@ -1,6 +1,12 @@
 #!/bin/bash
 set -euo pipefail
 
+echo "--- :robot_face: Failing fast!"
+echo "Git Status: "
+echo "$(git status)"
+echo "Calling exit"
+exit 1
+
 echo "--- :package: Installing dependencies"
 apt-get update && apt-get install -y curl jq git
 
