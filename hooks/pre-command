@@ -11,14 +11,12 @@ chmod u+x $BUILDKITE_BUILD_CHECKOUT_PATH/generate-pr
 ls -al $BUILDKITE_BUILD_CHECKOUT_PATH
 
 echo "Attempting to check out repo"
-cd $BUILDKITE_BUILD_CHECKOUT_PATH
-mkdir -p first-draft-repo
-cd first-draft-repo
-git clone https://github.com/buildkite/buildkite.git
+mkdir -p $BUILDKITE_BUILD_CHECKOUT_PATH/first-draft-repo
+git clone https://github.com/buildkite/buildkite.git $BUILDKITE_BUILD_CHECKOUT_PATH/first-draft-repo
 echo "Cloned"
 
 echo "Copying generate-pr from $HOOKS_DIR/../bin/generate-pr to $BUILDKITE_BUILD_CHECKOUT_PATH/first-draft-repo/generate-pr"
 cp $HOOKS_DIR/../bin/generate-pr $BUILDKITE_BUILD_CHECKOUT_PATH/first-draft-repo/generate-pr
 chmod u+x $BUILDKITE_BUILD_CHECKOUT_PATH/first-draft-repo/generate-pr
 
-ls -al
+ls -al $BUILDKITE_BUILD_CHECKOUT_PATH/first-draft-repo
