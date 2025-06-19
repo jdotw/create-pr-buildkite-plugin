@@ -157,10 +157,8 @@ else
     CLAUDE_CMD="npx @anthropic-ai/claude-code"
 fi
 
-echo "PATH: $PATH"
-echo "--- :sparkles: Running Claude Code CLI"
-
 # Create the complete prompt file including the context
+echo "--- :thinking_face: Forming the prompt for use with Claude Code"
 PROMPT_FILE=$(mktemp)
 cat > "$PROMPT_FILE" << EOF
 Based on the Linear issue below, please implement the requested functionality.
@@ -217,17 +215,18 @@ EOF
     echo "Mock change file created at: $MOCK_FILE"
 else
     # Run Claude Code with prompt from file and capture output
+    echo "--- :sparkles: Running Claude Code CLI"
     CLAUDE_OUTPUT_FILE=$(mktemp)
     echo "Capturing Claude Code output to: $CLAUDE_OUTPUT_FILE"
-    
+
     cat "$PROMPT_FILE" | $CLAUDE_CMD \
       -p \
       --model sonnet 2>&1 | tee "$CLAUDE_OUTPUT_FILE"
-    
+
     # Store the Claude Code output in metadata
     echo "--- :floppy_disk: Storing Claude Code output in metadata"
     buildkite-agent meta-data set "claude_code_output" < "$CLAUDE_OUTPUT_FILE"
-    
+
     # Create Buildkite annotation for Claude Code output
     echo "--- :buildkite: Creating Claude Code output annotation"
     buildkite-agent annotate --style "success" --context "claude-output" << EOF
