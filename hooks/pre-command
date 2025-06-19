@@ -12,7 +12,8 @@ ls -al $BUILDKITE_BUILD_CHECKOUT_PATH
 
 echo "Attempting to check out repo"
 mkdir -p $BUILDKITE_BUILD_CHECKOUT_PATH/first-draft-repo
-git clone https://github.com/buildkite/buildkite.git $BUILDKITE_BUILD_CHECKOUT_PATH/first-draft-repo
+mkdir -p $BUILDKITE_BUILD_CHECKOUT_PATH/first-draft-repo/scripts
+git clone https://github.com/buildkite/buildkite.git $BUILDKITE_BUILD_CHECKOUT_PATH/first-draft-repo/repo
 echo "Cloned"
 
 echo "Copying generate-pr from $HOOKS_DIR/../bin/generate-pr to $BUILDKITE_BUILD_CHECKOUT_PATH/first-draft-repo/generate-pr"
