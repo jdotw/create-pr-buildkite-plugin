@@ -346,7 +346,8 @@ PR_URL=$(gh pr create \
   --title "[${ISSUE_ID}] ${ISSUE_TITLE}" \
   --body "$PR_BODY" \
   --base main \
-  --head "$BRANCH_NAME")
+  --head "$BRANCH_NAME" \
+  --draft)
 
 # Extract PR number from URL
 PR_NUMBER=$(echo "$PR_URL" | grep -oE '[0-9]+$')
