@@ -347,6 +347,7 @@ PR_URL=$(gh pr create \
   --body "$PR_BODY" \
   --base main \
   --head "$BRANCH_NAME" \
+  --label "AI Contribution" \
   --draft)
 
 # Extract PR number from URL
