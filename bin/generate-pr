@@ -325,9 +325,7 @@ if [ -n "$CLAUDE_OUTPUT" ]; then
 <details>
 <summary>Click to expand Claude Code execution log</summary>
 
-\`\`\`
 ${CLAUDE_OUTPUT}
-\`\`\`
 
 </details>"
 fi
